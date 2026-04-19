@@ -1,6 +1,7 @@
 import { initSchema } from "./db/connection.ts";
 import { handleError, notFound } from "./lib/errors.ts";
 import * as owners from "./routes/owners.ts";
+import * as dogs from "./routes/dogs.ts";
 
 // Initialise schema on startup if the DB is empty
 // (In development we rely on `bun run db:reset` to fully seed.)
@@ -18,15 +19,23 @@ interface Route {
     handler: (req: Request, params: RegExpMatchArray) => Response | Promise<Response>;
 }
 
-// NOTE: Only owner routes are registered in this commit.
-// Dogs, staff, and bookings routes will be added by the next two commits.
+// NOTE: Owners and dogs routes are registered in this commit.
+// Staff and bookings routes will be added by the next commit.
 const routes: Route[] = [
+    // Owners
     { method: "GET", pattern: /^\/owners\/?$/, handler: (req) => owners.listOwners(req) },
     { method: "POST", pattern: /^\/owners\/?$/, handler: (req) => owners.createOwner(req) },
     { method: "GET", pattern: /^\/owners\/(\d+)\/dogs\/?$/, handler: (req, p) => owners.getOwnerDogs(Number(p[1]), req) },
     { method: "GET", pattern: /^\/owners\/(\d+)\/?$/, handler: (_req, p) => owners.getOwner(Number(p[1])) },
     { method: "PATCH", pattern: /^\/owners\/(\d+)\/?$/, handler: (req, p) => owners.updateOwner(Number(p[1]), req) },
     { method: "DELETE", pattern: /^\/owners\/(\d+)\/?$/, handler: (_req, p) => owners.deleteOwner(Number(p[1])) },
+
+    // Dogs
+    { method: "GET", pattern: /^\/dogs\/?$/, handler: (req) => dogs.listDogs(req) },
+    { method: "POST", pattern: /^\/dogs\/?$/, handler: (req) => dogs.createDog(req) },
+    { method: "GET", pattern: /^\/dogs\/(\d+)\/?$/, handler: (_req, p) => dogs.getDog(Number(p[1])) },
+    { method: "PATCH", pattern: /^\/dogs\/(\d+)\/?$/, handler: (req, p) => dogs.updateDog(Number(p[1]), req) },
+    { method: "DELETE", pattern: /^\/dogs\/(\d+)\/?$/, handler: (_req, p) => dogs.deleteDog(Number(p[1])) },
 ];
 
 const server = Bun.serve({
@@ -41,7 +50,7 @@ const server = Bun.serve({
                 status: "ok",
                 service: "dog-daycare-api",
                 version: "1.0.0",
-                resources: ["owners"],
+                resources: ["owners", "dogs"],
             });
         }
 
@@ -70,4 +79,4 @@ const server = Bun.serve({
 });
 
 console.log(`Dog Daycare API running at http://localhost:${server.port}`);
-console.log("Try: curl http://localhost:" + server.port + "/owners");
+console.log("Try: curl http://localhost:" + server.port + "/dogs");
