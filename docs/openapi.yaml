@@ -1,0 +1,519 @@
+openapi: 3.0.3
+info:
+  title: Dog Daycare API
+  description: |
+    A REST API for managing a dog daycare facility, including owners, dogs,
+    staff, and bookings. Built with Bun and SQLite for COMP 74.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Owners
+  - name: Dogs
+  - name: Staff
+  - name: Bookings
+
+paths:
+  /owners:
+    get:
+      tags: [Owners]
+      summary: List owners
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - name: search
+          in: query
+          schema: { type: string }
+          description: Search by first name, last name, or email
+      responses:
+        "200":
+          description: Paginated list of owners
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnerList"
+    post:
+      tags: [Owners]
+      summary: Create an owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OwnerInput" }
+      responses:
+        "201":
+          description: Owner created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Owner" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /owners/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      tags: [Owners]
+      summary: Get an owner by ID
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Owner" }
+          description: Owner found
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Owners]
+      summary: Update an owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OwnerInput" }
+      responses:
+        "200":
+          description: Owner updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Owner" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Owners]
+      summary: Delete an owner (cascades to dogs and bookings)
+      responses:
+        "204": { description: Owner deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /owners/{id}/dogs:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      tags: [Owners]
+      summary: List dogs belonging to an owner
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated list of dogs for the owner
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DogList" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /dogs:
+    get:
+      tags: [Dogs]
+      summary: List dogs
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - name: breed
+          in: query
+          schema: { type: string }
+        - name: owner_id
+          in: query
+          schema: { type: integer }
+        - name: vaccination_status
+          in: query
+          schema: { type: string, enum: [current, expired] }
+      responses:
+        "200":
+          description: Paginated list of dogs
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DogList" }
+    post:
+      tags: [Dogs]
+      summary: Create a dog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DogInput" }
+      responses:
+        "201":
+          description: Dog created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dog" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+
+  /dogs/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdParam" }]
+    get:
+      tags: [Dogs]
+      summary: Get a dog by ID
+      responses:
+        "200":
+          description: Dog found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dog" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Dogs]
+      summary: Update a dog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DogInput" }
+      responses:
+        "200":
+          description: Dog updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dog" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Dogs]
+      summary: Delete a dog
+      responses:
+        "204": { description: Dog deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /staff:
+    get:
+      tags: [Staff]
+      summary: List staff
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - name: role
+          in: query
+          schema: { type: string, enum: [handler, manager, trainer, receptionist] }
+        - name: active
+          in: query
+          schema: { type: string, enum: ["true", "false"] }
+      responses:
+        "200":
+          description: Paginated list of staff
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffList" }
+    post:
+      tags: [Staff]
+      summary: Create a staff member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StaffInput" }
+      responses:
+        "201":
+          description: Staff created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Staff" }
+
+  /staff/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdParam" }]
+    get:
+      tags: [Staff]
+      summary: Get a staff member by ID
+      responses:
+        "200":
+          description: Staff found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Staff" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Staff]
+      summary: Update a staff member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StaffInput" }
+      responses:
+        "200":
+          description: Staff updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Staff" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Staff]
+      summary: Delete a staff member
+      responses:
+        "204": { description: Staff deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /bookings:
+    get:
+      tags: [Bookings]
+      summary: List bookings with filtering
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - name: date_from
+          in: query
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          schema: { type: string, format: date }
+        - name: dog_id
+          in: query
+          schema: { type: integer }
+        - name: staff_id
+          in: query
+          schema: { type: integer }
+        - name: status
+          in: query
+          schema: { type: string, enum: [scheduled, checked_in, checked_out, cancelled] }
+        - name: service_type
+          in: query
+          schema: { type: string, enum: [half_day, full_day, overnight] }
+      responses:
+        "200":
+          description: Paginated list of bookings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BookingList" }
+    post:
+      tags: [Bookings]
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookingInput" }
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "422": { $ref: "#/components/responses/BusinessRuleViolation" }
+
+  /bookings/{id}:
+    parameters: [{ $ref: "#/components/parameters/IdParam" }]
+    get:
+      tags: [Bookings]
+      summary: Get a booking by ID
+      responses:
+        "200":
+          description: Booking found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Bookings]
+      summary: Update a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookingInput" }
+      responses:
+        "200":
+          description: Booking updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/BusinessRuleViolation" }
+    delete:
+      tags: [Bookings]
+      summary: Delete a booking
+      responses:
+        "204": { description: Booking deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Conflict:
+      description: Resource conflict (duplicate unique field)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    BusinessRuleViolation:
+      description: Request violates a business rule
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+
+    Owner:
+      type: object
+      properties:
+        id: { type: integer }
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        address: { type: string, nullable: true }
+        emergency_contact_name: { type: string, nullable: true }
+        emergency_contact_phone: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    OwnerInput:
+      type: object
+      required: [first_name, last_name, email, phone]
+      properties:
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        address: { type: string }
+        emergency_contact_name: { type: string }
+        emergency_contact_phone: { type: string }
+
+    OwnerList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Owner" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+
+    Dog:
+      type: object
+      properties:
+        id: { type: integer }
+        owner_id: { type: integer }
+        name: { type: string }
+        breed: { type: string, nullable: true }
+        age_years: { type: integer }
+        weight_kg: { type: number }
+        vaccination_expiry: { type: string, format: date }
+        feeding_notes: { type: string, nullable: true }
+        behavior_notes: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    DogInput:
+      type: object
+      required: [owner_id, name, age_years, weight_kg, vaccination_expiry]
+      properties:
+        owner_id: { type: integer }
+        name: { type: string }
+        breed: { type: string }
+        age_years: { type: integer, minimum: 0, maximum: 30 }
+        weight_kg: { type: number, minimum: 0, maximum: 150 }
+        vaccination_expiry: { type: string, format: date }
+        feeding_notes: { type: string }
+        behavior_notes: { type: string }
+
+    DogList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Dog" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+
+    Staff:
+      type: object
+      properties:
+        id: { type: integer }
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [handler, manager, trainer, receptionist] }
+        hired_date: { type: string, format: date }
+        active: { type: integer, enum: [0, 1] }
+        created_at: { type: string, format: date-time }
+
+    StaffInput:
+      type: object
+      required: [first_name, last_name, email, role, hired_date]
+      properties:
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [handler, manager, trainer, receptionist] }
+        hired_date: { type: string, format: date }
+        active: { type: boolean }
+
+    StaffList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Staff" }
+        pagination: { $ref: "#/components/schemas/Pagination" }
+
+    Booking:
+      type: object
+      properties:
+        id: { type: integer }
+        dog_id: { type: integer }
+        staff_id: { type: integer, nullable: true }
+        booking_date: { type: string, format: date }
+        check_in_time: { type: string, format: date-time }
+        check_out_time: { type: string, format: date-time, nullable: true }
+        service_type: { type: string, enum: [half_day, full_day, overnight] }
+        status: { type: string, enum: [scheduled, checked_in, checked_out, cancelled] }
+        notes: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    BookingInput:
+      type: object
+      required: [dog_id, booking_date, check_in_time, service_type]
+      properties:
+        dog_id: { type: integer }
+        staff_id: { type: integer, nullable: true }
+        booking_date: { type: string, format: date }
+        check_in_time: { type: string, format: date-time }
+        check_out_time: { type: string, format: date-time }
+        service_type: { type: string, enum: [half_day, full_day, overnight] }
+        status: { type: string, enum: [scheduled, checked_in, checked_out, cancelled] }
+        notes: { type: string }
+
+    BookingList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Booking" }
+        pagination: { $ref: "#/components/schemas/Pagination" }

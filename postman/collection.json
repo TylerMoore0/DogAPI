@@ -1,0 +1,178 @@
+{
+  "info": {
+    "name": "Dog Daycare API",
+    "description": "Postman collection for the Dog Daycare REST API (COMP 74 group project)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+    },
+    {
+      "name": "Owners",
+      "item": [
+        {
+          "name": "List owners",
+          "request": { "method": "GET", "url": "{{baseUrl}}/owners?page=1&limit=20" }
+        },
+        {
+          "name": "List owners (search)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/owners?search=apple" }
+        },
+        {
+          "name": "Get owner by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/owners/1" }
+        },
+        {
+          "name": "List dogs for owner",
+          "request": { "method": "GET", "url": "{{baseUrl}}/owners/1/dogs" }
+        },
+        {
+          "name": "Create owner",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/owners",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Jordan\",\n  \"last_name\": \"Lee\",\n  \"email\": \"jordan.lee@example.com\",\n  \"phone\": \"613-555-0199\",\n  \"address\": \"99 Test St\",\n  \"emergency_contact_name\": \"Taylor Lee\",\n  \"emergency_contact_phone\": \"613-555-0198\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update owner",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/owners/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"613-555-9999\"\n}" }
+          }
+        },
+        {
+          "name": "Delete owner",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/owners/8" }
+        },
+        {
+          "name": "Create owner (validation error)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/owners",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"first_name\": \"\",\n  \"email\": \"not-an-email\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dogs",
+      "item": [
+        { "name": "List dogs", "request": { "method": "GET", "url": "{{baseUrl}}/dogs" } },
+        { "name": "List dogs (breed filter)", "request": { "method": "GET", "url": "{{baseUrl}}/dogs?breed=Labrador" } },
+        { "name": "List dogs (current vaccination)", "request": { "method": "GET", "url": "{{baseUrl}}/dogs?vaccination_status=current" } },
+        { "name": "Get dog by ID", "request": { "method": "GET", "url": "{{baseUrl}}/dogs/1" } },
+        {
+          "name": "Create dog",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/dogs",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"owner_id\": 1,\n  \"name\": \"Rex\",\n  \"breed\": \"Mixed\",\n  \"age_years\": 3,\n  \"weight_kg\": 20.5,\n  \"vaccination_expiry\": \"2027-01-01\",\n  \"feeding_notes\": \"Kibble twice daily\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update dog",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/dogs/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"weight_kg\": 15.0\n}" }
+          }
+        },
+        { "name": "Delete dog", "request": { "method": "DELETE", "url": "{{baseUrl}}/dogs/10" } }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        { "name": "List staff", "request": { "method": "GET", "url": "{{baseUrl}}/staff" } },
+        { "name": "List staff (handlers only)", "request": { "method": "GET", "url": "{{baseUrl}}/staff?role=handler&active=true" } },
+        { "name": "Get staff by ID", "request": { "method": "GET", "url": "{{baseUrl}}/staff/1" } },
+        {
+          "name": "Create staff",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/staff",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Alex\",\n  \"last_name\": \"Kim\",\n  \"email\": \"alex.kim@daycare.example.com\",\n  \"role\": \"handler\",\n  \"hired_date\": \"2026-01-10\",\n  \"active\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Update staff (deactivate)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/staff/2",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"active\": false\n}" }
+          }
+        },
+        { "name": "Delete staff", "request": { "method": "DELETE", "url": "{{baseUrl}}/staff/6" } }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        { "name": "List bookings", "request": { "method": "GET", "url": "{{baseUrl}}/bookings" } },
+        { "name": "List bookings (date range)", "request": { "method": "GET", "url": "{{baseUrl}}/bookings?date_from=2026-04-17&date_to=2026-04-20" } },
+        { "name": "List bookings (scheduled only)", "request": { "method": "GET", "url": "{{baseUrl}}/bookings?status=scheduled" } },
+        { "name": "Get booking by ID", "request": { "method": "GET", "url": "{{baseUrl}}/bookings/1" } },
+        {
+          "name": "Create booking",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bookings",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dog_id\": 1,\n  \"staff_id\": 2,\n  \"booking_date\": \"2026-05-01\",\n  \"check_in_time\": \"2026-05-01T08:00:00\",\n  \"service_type\": \"full_day\",\n  \"notes\": \"First visit\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create booking (expired vaccination - should 422)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bookings",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dog_id\": 1,\n  \"booking_date\": \"2028-01-01\",\n  \"check_in_time\": \"2028-01-01T08:00:00\",\n  \"service_type\": \"full_day\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update booking (check out)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/bookings/4",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"checked_out\",\n  \"check_out_time\": \"2026-04-17T17:00:00\"\n}"
+            }
+          }
+        },
+        { "name": "Delete booking", "request": { "method": "DELETE", "url": "{{baseUrl}}/bookings/12" } }
+      ]
+    }
+  ]
+}
