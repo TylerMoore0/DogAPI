@@ -2,6 +2,8 @@ import { initSchema } from "./db/connection.ts";
 import { handleError, notFound } from "./lib/errors.ts";
 import * as owners from "./routes/owners.ts";
 import * as dogs from "./routes/dogs.ts";
+import * as staff from "./routes/staff.ts";
+import * as bookings from "./routes/bookings.ts";
 
 // Initialise schema on startup if the DB is empty
 // (In development we rely on `bun run db:reset` to fully seed.)
@@ -19,8 +21,6 @@ interface Route {
     handler: (req: Request, params: RegExpMatchArray) => Response | Promise<Response>;
 }
 
-// NOTE: Owners and dogs routes are registered in this commit.
-// Staff and bookings routes will be added by the next commit.
 const routes: Route[] = [
     // Owners
     { method: "GET", pattern: /^\/owners\/?$/, handler: (req) => owners.listOwners(req) },
@@ -36,6 +36,20 @@ const routes: Route[] = [
     { method: "GET", pattern: /^\/dogs\/(\d+)\/?$/, handler: (_req, p) => dogs.getDog(Number(p[1])) },
     { method: "PATCH", pattern: /^\/dogs\/(\d+)\/?$/, handler: (req, p) => dogs.updateDog(Number(p[1]), req) },
     { method: "DELETE", pattern: /^\/dogs\/(\d+)\/?$/, handler: (_req, p) => dogs.deleteDog(Number(p[1])) },
+
+    // Staff
+    { method: "GET", pattern: /^\/staff\/?$/, handler: (req) => staff.listStaff(req) },
+    { method: "POST", pattern: /^\/staff\/?$/, handler: (req) => staff.createStaff(req) },
+    { method: "GET", pattern: /^\/staff\/(\d+)\/?$/, handler: (_req, p) => staff.getStaff(Number(p[1])) },
+    { method: "PATCH", pattern: /^\/staff\/(\d+)\/?$/, handler: (req, p) => staff.updateStaff(Number(p[1]), req) },
+    { method: "DELETE", pattern: /^\/staff\/(\d+)\/?$/, handler: (_req, p) => staff.deleteStaff(Number(p[1])) },
+
+    // Bookings
+    { method: "GET", pattern: /^\/bookings\/?$/, handler: (req) => bookings.listBookings(req) },
+    { method: "POST", pattern: /^\/bookings\/?$/, handler: (req) => bookings.createBooking(req) },
+    { method: "GET", pattern: /^\/bookings\/(\d+)\/?$/, handler: (_req, p) => bookings.getBooking(Number(p[1])) },
+    { method: "PATCH", pattern: /^\/bookings\/(\d+)\/?$/, handler: (req, p) => bookings.updateBooking(Number(p[1]), req) },
+    { method: "DELETE", pattern: /^\/bookings\/(\d+)\/?$/, handler: (_req, p) => bookings.deleteBooking(Number(p[1])) },
 ];
 
 const server = Bun.serve({
@@ -50,7 +64,7 @@ const server = Bun.serve({
                 status: "ok",
                 service: "dog-daycare-api",
                 version: "1.0.0",
-                resources: ["owners", "dogs"],
+                resources: ["owners", "dogs", "staff", "bookings"],
             });
         }
 
@@ -79,4 +93,4 @@ const server = Bun.serve({
 });
 
 console.log(`Dog Daycare API running at http://localhost:${server.port}`);
-console.log("Try: curl http://localhost:" + server.port + "/dogs");
+console.log("Try: curl http://localhost:" + server.port + "/owners");
